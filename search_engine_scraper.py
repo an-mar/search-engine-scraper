@@ -1,7 +1,7 @@
 from distutils import file_util
 from fileinput import filename
 from bs4 import BeautifulSoup
-from time import sleep
+import time
 import requests
 from random import randint
 from html.parser import HTMLParser
@@ -14,7 +14,7 @@ class SearchEngine:
    @staticmethod
    def search(query, sleep=True):
       if sleep: # Prevents loading too many pages too soon
-         time.sleep(randint(10, 100))
+         time.sleep(randint(10, 50))
 
       temp_url = '+'.join(query.split()) #for adding + between words for the query
       url = 'http://www.ask.com/web?q=' + temp_url
@@ -25,9 +25,12 @@ class SearchEngine:
  
    @staticmethod
    def scrape_search_result(soup):
+      raw_results = soup.find_all("div", attrs = {"class" : "PartialSearchResults-item-title"})
+      results = []
       # removes ads and Ask media group results 
-      pre_soup = soup.find(lambda tag: tag.name == 'div' and tag.get('class', '') == ['PartialSearchResults-body'])
-      raw_results = pre_soup.find_all("div", attrs={"class": "PartialSearchResults-item-title"})      results = []
+      #pre_soup = soup.find(lambda tag: tag.name == 'div' and tag.get('class', '') == ['PartialSearchResults-body'])
+      #raw_results = pre_soup.find_all("div", attrs={"class": "PartialSearchResults-item-title"})      
+      #results = []
       
    #implement a check to get only 10 results and also check that URLs must not be duplicated
       for result in raw_results:
@@ -40,7 +43,7 @@ class SearchEngine:
       queryResultDict = {}
 
       #retrieve search results for each query, store as strings in list
-      for query in queries:
+      for query in queryList:
          searchResults = []
          searchResults.append(str(SearchEngine.search(query)))
 
@@ -65,9 +68,10 @@ class InputOutput:
          
          #indicates end of file
          if not query:
-         break
+            queryFile.close()
+            break
 
-      fileName.close()
+         
          
       return queryList
   
@@ -90,8 +94,17 @@ def main():
    #create list from textfile containing all queries
    queries = InputOutput.parseTextFile('100QueriesSet3.txt')
 
+   #logging
+   print("this is the query list")
+   print(queries)
+
    #not great practice but doing scraping and joining in this function
+   print("this is the q/r dictionary")
+
    qrDict = SearchEngine.joinQueriesResults(queries)
+
+   #logging
+   print(qrDict)
 
    #write Ask data to JSON file
    InputOutput.writeJSON(qrDict)
@@ -102,7 +115,7 @@ def main():
    
 
 #write query and result pairs from Ask to json file
-   askResultsJSON = writeJSON(INSERT QUERIES AND RESULTS)
+   #askResultsJSON = writeJSON(INSERT QUERIES AND RESULTS)
 
 if __name__ == "__main__":
     main()
