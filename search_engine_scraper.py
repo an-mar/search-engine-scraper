@@ -27,15 +27,16 @@ class SearchEngine:
    def scrape_search_result(soup):
       raw_results = soup.find_all("div", attrs = {"class" : "PartialSearchResults-item-title"})
       results = []
-      # removes ads and Ask media group results 
-      #pre_soup = soup.find(lambda tag: tag.name == 'div' and tag.get('class', '') == ['PartialSearchResults-body'])
-      #raw_results = pre_soup.find_all("div", attrs={"class": "PartialSearchResults-item-title"})      
-      #results = []
+      i = 0
       
    #implement a check to get only 10 results and also check that URLs must not be duplicated
       for result in raw_results:
          link = result.find('a').get('href')
-         results.append(link)
+         if link.find('%26ad%3DdirN%26') == -1 and link.find('&ad=dirN&') == -1 and link not in results and i < 10:
+            results.append(link)
+            i += 1
+         else:
+            continue
       return results
 
    #return a dictionary with queries ad keys and results as values
@@ -95,19 +96,23 @@ def main():
    queries = InputOutput.parseTextFile('100QueriesSet3.txt')
 
    #logging
-   print("this is the query list")
-   print(queries)
+   #print("this is the query list")
+   #print(queries)
 
    #not great practice but doing scraping and joining in this function
-   print("this is the q/r dictionary")
+   #print("this is the q/r dictionary")
 
-   qrDict = SearchEngine.joinQueriesResults(queries)
+   #qrDict = SearchEngine.joinQueriesResults(queries)
 
    #logging
-   print(qrDict)
+   print("queries and results:")
+   for query in queries:
+      print(query)
+      print(SearchEngine.search(query))
+   
 
    #write Ask data to JSON file
-   InputOutput.writeJSON(qrDict)
+   #InputOutput.writeJSON(qrDict)
 
    #need to compare results
    
